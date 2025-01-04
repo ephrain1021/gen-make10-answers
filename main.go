@@ -2,22 +2,13 @@ package main
 
 import (
 	"fmt"
-
 	"sort"
 
+	"github.com/ephrain1021/go-modules/set"
 	"github.com/expr-lang/expr"
 )
 
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
-}
-
-func tryExpression(allResults map[string][]string, a, b, c, d int, expression string) {
+func tryExpression(allResults map[string]*set.Set, a, b, c, d int, expression string) {
 	result, err := expr.Eval(expression, nil)
 	if err == nil {
 		if value, ok := result.(int); ok && value == 10 {
@@ -26,17 +17,14 @@ func tryExpression(allResults map[string][]string, a, b, c, d int, expression st
 			sort.Ints(digits)
 			key := fmt.Sprintf("%d%d%d%d", digits[0], digits[1], digits[2], digits[3])
 			if _, ok := allResults[key]; !ok {
-				allResults[key] = []string{}
+				allResults[key] = set.New()
 			}
-			// If the expression is not in the list, append it
-			if !contains(allResults[key], expression) {
-				allResults[key] = append(allResults[key], expression)
-			}
+			allResults[key].Add(expression)
 		}
 	}
 }
 
-func genCombinationsWith0Parentheses(allResults map[string][]string, a, b, c, d int, operators []string) {
+func genCombinationsWith0Parentheses(allResults map[string]*set.Set, a, b, c, d int, operators []string) {
 	for _, op1 := range operators {
 		for _, op2 := range operators {
 			for _, op3 := range operators {
@@ -46,7 +34,7 @@ func genCombinationsWith0Parentheses(allResults map[string][]string, a, b, c, d 
 	}
 }
 
-func genCombinationsWith1Parentheses(allResults map[string][]string, a, b, c, d int, operators []string) {
+func genCombinationsWith1Parentheses(allResults map[string]*set.Set, a, b, c, d int, operators []string) {
 	for _, op1 := range operators {
 		for _, op2 := range operators {
 			for _, op3 := range operators {
@@ -61,7 +49,7 @@ func genCombinationsWith1Parentheses(allResults map[string][]string, a, b, c, d 
 	}
 }
 
-func genCombinationsWith2Parentheses(allResults map[string][]string, a, b, c, d int, operators []string) {
+func genCombinationsWith2Parentheses(allResults map[string]*set.Set, a, b, c, d int, operators []string) {
 	for _, op1 := range operators {
 		for _, op2 := range operators {
 			for _, op3 := range operators {
@@ -79,7 +67,7 @@ func genCombinationsWith2Parentheses(allResults map[string][]string, a, b, c, d 
 func main() {
 	digits := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 	operators := []string{"+", "-", "*", "/"}
-	allResults := map[string][]string{}
+	allResults := make(map[string]*set.Set)
 
 	for _, a := range digits {
 		for _, b := range digits {
@@ -96,9 +84,9 @@ func main() {
 	fmt.Println(len(allResults))
 
 	// Print all results, each expression in one line
-	for key, value := range allResults {
+	for key, expression_list := range allResults {
 		fmt.Println(key)
-		for _, expression := range value {
+		for _, expression := range expression_list.List() {
 			fmt.Printf("  %s\n", expression)
 		}
 	}
